@@ -31,13 +31,14 @@ src/
   main.ts               # entry point + boot (PC injection, preload, start loop)
   game.ts               # State enum, the game state object, setMap, world movement, main loop
   types.ts              # GameState, GameFlags (all flags), Mon, Move, MapDef, NPC, Battle, …
+  assets/gen/           # ~1000 sprite PNGs extracted from base64 (mon/, mega/, ow/, actor/, …)
   core/
     constants.ts        # TILE / SCALE / VIEW_W / VIEW_H
     canvas.ts           # shared canvas + 2D context (headless stub for tests)
   data/
     dex.ts              # DEX, type chart + typeMult, moves, makeMon, mkMega, dmg, stat math
     maps.ts             # all map grids + MAPS, with NPC interaction closures
-    sprites.ts          # embedded base64 sprite-art tables (CUSTOM_SPRITES, OW_RAW, MEGA_SPR)
+    sprites.ts          # sprite-art tables built from src/assets/gen via import.meta.glob
   engine/
     renderer.ts         # tile/world drawing, sprite loading, box/text/hpBar, title
     battle.ts           # battle loop, all battle starters, endBattle dispatcher, evolution
@@ -65,8 +66,11 @@ existing saves load as-is. New flags fall back to their defaults via `Object.ass
 
 - **100% of gameplay/content is preserved.** The engine code was sliced from the
   original verbatim; only module wiring and types were added.
-- **The 5 Mirage-cinematic sprites** moved from inline base64 to `public/sprites/*.png`
-  (loaded by URL), removing ~900 KB of base64 from the JS bundle.
+- **Sprites are no longer inline base64.** The 5 Mirage-cinematic sprites live in
+  `public/sprites/*.png` (referenced by URL); the rest of the sprite art (~1000 PNGs:
+  Pokémon, overworld, mega, actors, title, …) was extracted to `src/assets/gen/` and is
+  re-bundled as hashed, lazily-loaded asset URLs via `import.meta.glob`. This cut the JS
+  bundle from ~1.93 MB to ~310 KB (gzip ~1.27 MB → ~92 KB).
 - **TypeScript is "pragmatic strict":** full `strict` mode incl. `strictNullChecks` is
   on; `noImplicitAny` is relaxed for the ported engine internals. The game-state surface
   (`GameState`, `GameFlags`, `Mon`, `MapDef`, …) is fully typed in `src/types.ts`.
