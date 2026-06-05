@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { MapDef } from '../types';
 import { Audio } from '../engine/audio';
-import { chooseEon, game, giveMon, offerGen2Choice, pickStarter, setMap, triggerIntroCutscene } from '../game';
+import { chooseEon, game, giveMon, offerGen2Choice, pickStarter, setMap, triggerIntroCutscene, isMidE4Gauntlet } from '../game';
 import { choice, dialogue } from '../engine/dialogue';
 import { healParty, markCaught, markSeen, startAquaSkyBattle, startArchieBattle, startAuroraGymBattle, startBattle, startBigRivalBattle, startBirchGymBattle, startBlaineBattle, startBrawlyBattle, startBrockBattle, startCinnaRivalBattle, startErikaBattle, startGiovanniBattle, startHoennE4_Drake, startHoennE4_Glacia, startHoennE4_Phoebe, startHoennE4_Sidney, startJohtoChamp, startKogaBattle, startLeagueRivalBattle, startMakerRescue, startMarowakBattle, startMaxieClimaxBattle, startMayBattle, startMayRematch1, startMewtwoBoss, startMirageGymBattle, startMistyBattle, startNormanBattle, startRematch, startRocketBoss, startSabrinaBattle, startShipRivalBattle, startSilphBattle, startSteelGymBattle, startStevenChampBattle, startSurgeBattle, startTower, startTrainerFight, startViridianBattle, startZenithGymBattle } from '../engine/battle';
 import { makeMon, mkMega } from './dex';
@@ -2023,26 +2023,31 @@ MAPS.POKEMON_LEAGUE={
   ],
   signs:{ '4:11':"INDIGO PLATEAU\nPOKEMON LEAGUE\nELITE FOUR ahead." },
   warps:[
-    {x:4,y:12,to:'HOENN_LEAGUE',tx:4,ty:1,gate:'mirageFinale'}
+    // Beyond the Kanto champion (the top tile, clear once leagueBeaten) lies the
+    // HOENN LEAGUE — sealed until the MIRAGE ISLAND finale.
+    {x:4,y:1,to:'HOENN_LEAGUE',tx:4,ty:14,gate:'mirageFinale'}
   ],
   exits:[], encounters:null
 };
 
 
 export const HOENN_LEAGUE_GRID=[
- '#########',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#####.####',
- '#########'
+ '#########', // 0
+ '####.####', // 1  STEVEN (champion dais)
+ '####.####', // 2
+ '####.####', // 3  DRAKE
+ '####.####', // 4
+ '####.####', // 5  GLACIA
+ '####.####', // 6
+ '####.####', // 7  PHOEBE
+ '####.####', // 8
+ '####.####', // 9  SIDNEY
+ '####.####', // 10
+ '####.####', // 11 league GUARD (blocks return while mid-gauntlet)
+ '##.....##', // 12 antechamber
+ '##.....##', // 13 antechamber (NURSE)
+ '####.####', // 14 entrance / exit warp
+ '#########'  // 15
 ];
 MAPS.HOENN_LEAGUE={
   name:'HOENN_LEAGUE', grid:HOENN_LEAGUE_GRID, interior:true,
@@ -2074,10 +2079,24 @@ MAPS.HOENN_LEAGUE={
      ], ()=>startStevenChampBattle())},
     {x:4,y:1,dir:'down',kind:'oak',name:'STEVEN_CHAMP_DONE',
      present:()=>game.flags.hoennChampBeaten,
-     talk:()=>dialogue(['STEVEN: HOENN\'s champion.\nI like the sound of that.','STEVEN: The title is yours.\nWear it well.'])}
+     talk:()=>dialogue(['STEVEN: HOENN\'s champion.\nI like the sound of that.','STEVEN: The title is yours.\nWear it well.'])},
+    // Antechamber NURSE — the last heal/save point before the gauntlet.
+    {x:5,y:13,dir:'down',kind:'nurse',name:'LEAGUE_NURSE',
+     talk:()=>{
+       if(game.flags.hoennChampBeaten){ dialogue(["NURSE: Welcome back,\nCHAMPION! Rest anytime."], ()=>{ healParty(); Audio.heal(); }); return; }
+       dialogue([
+         "NURSE: Beyond this point\nis the ELITE FOUR — five\nbattles, no breaks.",
+         "NURSE: Let me heal your\nteam to full. This is\nyour last chance!"
+       ], ()=>{ healParty(); Audio.heal(); dialogue(["NURSE: All set. Walk north\nwhen you're ready. Good luck!"]); });
+     }},
+    // League GUARD — stands in the corridor and blocks retreat once the gauntlet
+    // has begun (no leaving to heal mid-run). Gone before Sidney and after Steven.
+    {x:4,y:11,dir:'down',kind:'rocket',name:'LEAGUE_GUARD',
+     present:()=>isMidE4Gauntlet(),
+     talk:()=>dialogue(["GUARD: No turning back now.\nThe ELITE FOUR must be\nfaced in one run.","GUARD: Fall here and you\nstart again from SIDNEY.\nGive it everything!"])}
   ],
-  signs:{ '4:11':"EVER GRANDE CITY\nHOENN POKEMON LEAGUE\nCHAMPION: STEVEN STONE" },
-  warps:[ {x:4,y:12,to:'POKEMON_LEAGUE',tx:4,ty:11} ],
+  signs:{ '4:14':"EVER GRANDE CITY\nHOENN POKEMON LEAGUE\nCHAMPION: STEVEN STONE" },
+  warps:[ {x:4,y:14,to:'POKEMON_LEAGUE',tx:4,ty:11} ],
   exits:[], encounters:null
 };
 
