@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+
+    /* Pragmatic strict: full strict mode (strictNullChecks, strictFunctionTypes,
+       etc.) stays ON, but noImplicitAny is relaxed so the faithfully-ported engine
+       internals don't all need explicit param annotations. The game-state surface
+       (GameState / GameFlags / Mon / maps) IS fully typed in src/types.ts. */
+    "strict": true,
+    "noImplicitAny": false,
+
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "types": ["vite/client", "node", "vitest/globals"]
+  },
+  "include": ["src", "vite.config.ts", "eslint.config.js"]
+}
