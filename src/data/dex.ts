@@ -297,6 +297,26 @@ DEX[374] = ["Metang","Steel","Psychic",60,75,100,60,50];    // National Dex #375
 DEX[375] = ["Metagross","Steel","Psychic",80,135,130,95,70];// National Dex #376
 DEX[379] = ["Latios","Dragon","Psychic",80,90,80,130,110];  // National Dex #380
 DEX[380] = ["Latias","Dragon","Psychic",80,80,90,110,110];  // National Dex #381
+// Hoenn ELITE FOUR + CHAMPION species — needed by the HOENN_LEAGUE gauntlet.
+// Without these rows makeMon() reads DEX[undefined] and throws, crashing the E4.
+// [name, type1, type2|null, HP, Atk, Def, Spc(=SpA), Spe]
+DEX[301] = ["Sableye","Dark","Ghost",50,75,75,65,50];        // #302 (Phoebe)
+DEX[318] = ["Sharpedo","Water","Dark",70,120,40,95,95];      // #319 (Sidney)
+DEX[329] = ["Flygon","Ground","Dragon",80,100,80,80,100];    // #330 (Drake)
+DEX[331] = ["Cacturne","Grass","Dark",70,115,60,115,55];     // #332 (Sidney)
+DEX[333] = ["Altaria","Dragon","Flying",75,70,90,70,80];     // #334 (Drake)
+DEX[341] = ["Crawdaunt","Water","Dark",63,120,85,90,55];     // #342 (Sidney)
+DEX[343] = ["Claydol","Ground","Psychic",60,70,105,70,75];   // #344 (Steven)
+DEX[345] = ["Cradily","Rock","Grass",86,81,97,81,43];        // #346 (Steven)
+DEX[347] = ["Armaldo","Rock","Bug",75,125,100,70,45];        // #348 (Steven)
+DEX[353] = ["Banette","Ghost",null,64,115,65,83,65];         // #354 (Phoebe)
+DEX[355] = ["Dusclops","Ghost",null,40,70,130,60,25];        // #356 (Phoebe)
+DEX[358] = ["Absol","Dark",null,65,130,60,75,75];            // #359 (Sidney)
+DEX[361] = ["Glalie","Ice",null,80,80,80,80,80];             // #362 (Glacia)
+DEX[363] = ["Sealeo","Ice","Water",90,60,70,75,45];          // #364 (Glacia)
+DEX[364] = ["Walrein","Ice","Water",110,80,90,95,65];        // #365 (Glacia)
+DEX[371] = ["Shelgon","Dragon",null,65,95,100,60,50];        // #372 (Drake)
+DEX[372] = ["Salamence","Dragon","Flying",95,135,80,110,100];// #373 (Drake)
 
 
 /* ---------------------------------------------------------------------------

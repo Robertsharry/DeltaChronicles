@@ -8,7 +8,8 @@ import { choice, dialogue, renderChoice, renderDialogue, updateChoice, updateDia
 import { renderBag, renderFly, renderMenu, renderPC, renderParty, renderPokedex, renderTrainer, teachFly, teachSurf, updateBag, updateFly, updateMenu, updatePC, updateParty, updatePokedex, updateTrainer } from './engine/ui';
 import { startRayquazaDescentCutscene } from './cutscenes/rayquaza';
 import { startMirageIslandCutscene } from './cutscenes/mirage';
-import { makeMon } from './data/dex';
+import { updateHallOfFame, renderHallOfFame } from './cutscenes/halloffame';
+import { makeMon, recalc } from './data/dex';
 import { healParty, markCaught, markSeen, renderBattle, renderEvolution, startBattle, startRivalBattle, updateBattle, updateEvolution } from './engine/battle';
 import { consume, keys } from './engine/input';
 import { hasSave, loadGame } from './engine/save';
@@ -18,7 +19,7 @@ import { ctx } from './core/canvas';
 export const State={ TITLE:'title', WORLD:'world', DIALOGUE:'dialogue',
   CHOICE:'choice', MENU:'menu', PARTY:'party', BATTLE:'battle',
   POKEDEX:'pokedex', BAG:'bag', TRAINER:'trainer', PC:'pc', FLY:'fly',
-  EVOLUTION:'evolution', CUTSCENE:'cutscene' } as const;
+  EVOLUTION:'evolution', CUTSCENE:'cutscene', HALLOFFAME:'halloffame' } as const;
 
 
 export const game: GameState = {
@@ -118,8 +119,29 @@ export const game: GameState = {
   lastCenter:null,   // {map,x,y} of the town tile outside the last Pokemon Center used; set on Center entry
   titleT:0,
   flash:0,
-  cutscene:null   // active LegendaryDescentCutscene instance (Part 3)
+  cutscene:null,  // active LegendaryDescentCutscene instance (Part 3)
+  e4Snapshot:null // party snapshot taken on entering the Hoenn E4 gauntlet
 };
+
+// ===== Hoenn ELITE FOUR gauntlet helpers =====
+// True while the player is partway through the E4 (beaten at least Sidney, or a
+// snapshot is held) and has not yet become Champion.
+export function isMidE4Gauntlet(){
+  return !game.flags.hoennChampBeaten &&
+    (game.flags.hE4_1 || game.flags.hE4_2 || game.flags.hE4_3 || game.flags.hE4_4 || !!game.e4Snapshot);
+}
+// Take a deep-copied snapshot of the party as they enter the gauntlet.
+export function snapshotE4Party(){
+  game.e4Snapshot = game.party.map(m=>JSON.parse(JSON.stringify(m)) as Mon);
+}
+// Restore the party to the lobby snapshot and reset E4 progress to Sidney.
+export function restoreE4Party(){
+  if(game.e4Snapshot){
+    game.party = game.e4Snapshot.map(m=>{ const c=JSON.parse(JSON.stringify(m)) as Mon; recalc(c,false); return c; });
+  }
+  game.flags.hE4_1=false; game.flags.hE4_2=false; game.flags.hE4_3=false; game.flags.hE4_4=false;
+  game.e4Snapshot=null;
+}
 
 
 export function setMap(name,tx,ty,dir){
@@ -776,6 +798,7 @@ export function loop(ts){
     case State.BATTLE: updateBattle(); break;
     case State.EVOLUTION: updateEvolution(dt); break;
     case State.CUTSCENE: if(game.cutscene) game.cutscene.update(dt); break;
+    case State.HALLOFFAME: updateHallOfFame(dt); break;
   }
 
   Music.tick(dt);
@@ -805,6 +828,7 @@ export function loop(ts){
         ctx.restore();
       }
       break;
+    case State.HALLOFFAME: renderHallOfFame(); break;
   }
   requestAnimationFrame(loop);
 }

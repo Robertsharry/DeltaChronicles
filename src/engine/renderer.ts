@@ -3,7 +3,7 @@ import { DEX } from '../data/dex';
 import { CUSTOM_SPRITES, MEGA_SPR, OW_RAW } from '../data/sprites';
 import { ctx } from '../core/canvas';
 import { followerMon, game, tileAt } from '../game';
-import { TILE, VIEW_H, VIEW_W } from '../core/constants';
+import { TILE, VIEW_H, VIEW_W, BUILD_STAMP } from '../core/constants';
 // AUTO-SLICED from legacy/delta-chronicles-v20.html — module: renderer
 import megaMewtwoXUrl from '../assets/gen/mega_mewtwo_x.png';
 import megaMewtwoYUrl from '../assets/gen/mega_mewtwo_y.png';
@@ -539,9 +539,9 @@ export function renderTitle(){
   ctx.textAlign='left'; ctx.textBaseline='top';
   ctx.font="6px 'Press Start 2P', monospace";
   ctx.fillStyle='rgba(0,0,0,.7)';
-  ctx.fillText("BUILD 2026-05-31 · delta v19 · part 3 rayquaza",3,3);
+  ctx.fillText(BUILD_STAMP,3,3);
   ctx.fillStyle='#7ec77e';
-  ctx.fillText("BUILD 2026-05-31 · delta v19 · part 3 rayquaza",2,2);
+  ctx.fillText(BUILD_STAMP,2,2);
   // Blinking start prompt (bottom, boxed for contrast)
   if(Math.floor(game.titleT*1.6)%2===0){
     ctx.textAlign='center';
