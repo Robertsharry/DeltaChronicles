@@ -9,7 +9,8 @@
 /** Finite-state-machine state names (mirror of the runtime `State` object in game.ts). */
 export type GameStateName =
   | 'title' | 'world' | 'dialogue' | 'choice' | 'menu' | 'party' | 'battle'
-  | 'pokedex' | 'bag' | 'trainer' | 'pc' | 'fly' | 'evolution' | 'cutscene';
+  | 'pokedex' | 'bag' | 'trainer' | 'pc' | 'fly' | 'evolution' | 'cutscene'
+  | 'halloffame';
 
 // ---- Pokémon ----------------------------------------------------------------
 export interface MonBase { hp: number; atk: number; def: number; spc: number; spe: number; }
@@ -385,6 +386,9 @@ export interface GameState {
   flash: number;
   cutscene: CutsceneController | null;
   flyView: FlyView;
+  // Lobby snapshot of the party taken on entering the Hoenn E4 gauntlet, so a
+  // mid-gauntlet reload restarts from Sidney with the party you walked in with.
+  e4Snapshot: Mon[] | null;
   // Runtime-added (absent in the initial literal):
   tower?: Tower | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

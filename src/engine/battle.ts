@@ -1,7 +1,8 @@
 /* eslint-disable */
 import type { Mon } from '../types';
 import { Audio } from './audio';
-import { State, game, giveMon, offerGen2Choice, setMap, triggerIntroCutscene } from '../game';
+import { State, game, giveMon, offerGen2Choice, setMap, triggerIntroCutscene, snapshotE4Party, restoreE4Party, isMidE4Gauntlet } from '../game';
+import { startHallOfFame } from '../cutscenes/halloffame';
 import { DEX, buildRivalMoves, dmg, learnList, makeMon, makeMoveObjs, mkMega, recalc } from '../data/dex';
 import { choice, dialogue } from './dialogue';
 import { MEGA_MEWTWO_X, MEGA_MEWTWO_Y, box, drawBattler, drawMon, hpBar, preloadMons, renderWorld, text } from './renderer';
@@ -653,10 +654,16 @@ export function winFoe(){
   const concludeWin=()=>{
     const bb=game.battle;
     if(bb && bb.foeTeam && bb.foeTeam.length){
+      // STEVEN's mid-battle taunt, fired once when his team drops to half (3 left in queue).
+      const stevenTaunt = bb.isStevenChamp && bb.foeTeam.length===3 && !bb.stevenTaunted;
       const nf=bb.foeTeam.shift()!;
       bb.foe=nf; markSeen(nf.id);
       bb.foeShake=0; bb.flash=0; bb.phase='intro';
-      bMsg(nf.mega?(bb.foeLabel+"'s "+nf.name+"\nMega Evolved!"):(bb.foeLabel+" sent out\n"+nf.name+"!"),()=>{ bb.phase='menu'; });
+      const sendOut=()=>bMsg(nf.mega?(bb.foeLabel+"'s "+nf.name+"\nMega Evolved!"):(bb.foeLabel+" sent out\n"+nf.name+"!"),()=>{ bb.phase='menu'; });
+      if(stevenTaunt){
+        bb.stevenTaunted=true;
+        bMsg("STEVEN: Beautiful. You're\neverything they said.\nBut steel only hardens\nunder pressure.",sendOut);
+      } else sendOut();
     } else if(bb && bb.isErika && !bb.erikaMegaDone){
       bb.erikaMegaDone=true;
       const mv=makeMon(3,55); mv.mega=true;
@@ -1430,21 +1437,14 @@ export function endBattle(playerOk, _caught?){
     game.flags.stevenBeaten=true; game.flags.hoennChampBeaten=true;
     game.npcs=game.npcs.filter(n=>n.name!=='STEVEN_CHAMP');
     game.battle=null; game.state=State.WORLD; healParty(); Audio.heal();
+    // Steven's defeat lines, then the Hall of Fame ceremony (sprites + warp home).
     dialogue([
       'STEVEN: ...You did it.',
       'STEVEN: I held this title\nfor years. Waiting for\nsomeone worthy.',
       'STEVEN: You calmed GROUDON\nand KYOGRE. RAYQUAZA bowed.\nMIRAGE ISLAND opened\nfor you alone.',
       'STEVEN: And now this.',
-      'STEVEN: You are HOENN\'s\nCHAMPION.',
-      '* * * HOENN HALL OF FAME * * *',
-      ...game.party.map((m,i)=>(i+1)+'.  '+m.name+'\nLv'+m.level+'  HP '+m.maxHp+'\nHoenn\'s finest.'),
-      'STEVEN: The region is yours.\nWhenever it needs you,\nyou will answer. I know it.',
-      '* * * * * * * * * * * *',
-      '  POKEMON: THE DELTA',
-      '     CHRONICLES',
-      '   T R U E   E N D',
-      '* * * * * * * * * * * *'
-    ]); return;
+      'STEVEN: You are HOENN\'s\nCHAMPION. Come — let the\nregion record your team.'
+    ], ()=>startHallOfFame()); return;
   }
   if((b.isHoennE4_1||b.isHoennE4_2||b.isHoennE4_3||b.isHoennE4_4||b.isStevenChamp) && !playerOk){ game.battle=null; return; }
   if(b.isLeagueRival && playerOk){
@@ -1871,6 +1871,8 @@ export function blackout(){
     return;
   }
   game.battle=null;
+  // Losing the E4 gauntlet sends you back to Sidney with your lobby party.
+  if(isMidE4Gauntlet()) restoreE4Party();
   healParty();
   const c=game.lastCenter;
   if(c && MAPS[c.map]){
@@ -1891,6 +1893,7 @@ export function blackout(){
 /* ====== MIRAGE ISLAND ====== */
 
 export function startHoennE4_Sidney(){
+  if(!game.e4Snapshot) snapshotE4Party();   // lock in the lobby party for the gauntlet
   var a=makeMon(262,72),b=makeMon(275,73),c=makeMon(332,74);
   var d=makeMon(342,75),e=makeMon(359,76),f=makeMon(319,78);
   startBattle(a,true,'SIDNEY'); game.battle!.foeTeam=[b,c,d,e,f]; game.battle!.isHoennE4_1=true;
